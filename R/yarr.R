@@ -22,6 +22,17 @@ escape_HTML <- function(text) {
 # character vector of length one, and envir is the environment where evaluation
 # should occur. By convention, handlers strip trailing newlines.
 
+# The capture_handler_evaluate and capture_handler_classic functions
+# are Sweave-like functions that return a string that appears as if the code
+# were evaluated at the R prompt. The _evaluate version uses the 'evaluate'
+# package, whereas the _classic version does not. These functions are 
+# configurable. The 'output' parameter indicates whether the returned string
+# should contain anything other than errors, warnings, or messages. The
+# 'source' parameter indicates whether the returned string should contain the
+# code that generated output. The 'prompt' argument indicates whether the R
+# prompt should be printed (i.e., '>') before code. Clearly, 'prompt' has no
+# effect when 'source' is FALSE, and neither 'source' nor 'prompt' have an
+# effect when 'output' is FALSE.
 capture_handler_evaluate <-
 function(code, envir, output=TRUE, source=TRUE, prompt=TRUE) {
     require("evaluate", quietly=TRUE)
@@ -73,6 +84,8 @@ function(code, envir, output=TRUE, source=TRUE, prompt=TRUE) {
     return(out)
 }
 
+# The capture_handler_evaluate function is used when the 'evaluate' package is
+# installed
 capture_handler <-
 function(code, envir, output=TRUE, source=TRUE, prompt=TRUE) {
     if(suppressWarnings(require("evaluate", quietly=TRUE))) {
@@ -82,20 +95,28 @@ function(code, envir, output=TRUE, source=TRUE, prompt=TRUE) {
     }
 }
 
+# Return errors, warnings, and messages
 silent_handler <- function(code, envir) {
     capture_handler(code, envir, output=FALSE)
 }
 
+# Return R output, including errors, warnings, and messages, but not code
 result_handler <- function(code, envir) {
     code <- sub('^=','',code)
     capture_handler(code, envir, source=FALSE)
 }
 
+# Return R output, including errors, warnings, messages, and code, but don't
+# print the R prompt. This is useful, for example, when the code will be copied
+# and pasted from an email or webpage into the R interpreter.
 source_handler <- function(code, envir) {
     code <- sub('^&','',code)
     capture_handler(code, envir, prompt=FALSE)
 }
 
+# Collapse lines into a single string, inserting linebreaks and, if 'prompt' is
+# TRUE, the R prompt. FIXME: should the linebreak characters be extracted from
+# options()?
 line_fmt <- function(x, prompt=TRUE) {
     lines <- unlist(strsplit(x, '\n'))
     if(prompt) {
@@ -106,21 +127,26 @@ line_fmt <- function(x, prompt=TRUE) {
     paste(lines, '\n', collapse='', sep='')
 }
 
+# Same as result_handler, but escape special HTML characters
 html_result_handler <- function(code, envir) {
     code <- sub('^/','',code)
     escape_HTML(result_handler(code,envir))
 }
 
+# Same as source_handler, but escape special HTML characters
 html_source_handler <- function(code, envir) {
     code <- sub('^/','',code)
     escape_HTML(source_handler(code,envir))
 }
 
+# Same as capture_handler, but escape special HTML characters
 html_capture_handler <- function(code, envir) {
     code <- sub('^/','',code)
     escape_HTML(capture_handler(code,envir))
 }
 
+# This structure is an example of how the 'handlers' argument to yarr should
+# be constructed. This is the default collection of code handlers.
 default_handlers <- function() {
     handlers <- list()
     handlers[[1]] <- list(regex='',handler=silent_handler)
@@ -133,13 +159,15 @@ default_handlers <- function() {
     return(handlers)
 }
 
-#other symbols that are not syntactically valid at the 
-#beginning of an expression: '&', '*', '%', '<' '>'
+# Other symbols that are not syntactically valid at the 
+# beginning of an expression: '&', '*', '%', '<' '>'
 
-#This closing delimiter regex permits removal of trailing
-#newlines in the style of the brew package.
+# This closing delimiter regex permits removal of trailing
+# newlines in the style of the brew package.
 default_delim <- function() c('<<', '>>|->>|->>\n')
 
+# The dispatch function matches delimited code, *including the delimiter*,
+# against the collection of code handlers.
 dispatch <- function(code, envir) {
     handlers <- list()
     if(exists(".handlers", envir))
@@ -201,24 +229,37 @@ yarr <- function(file=stdin(),envir=parent.frame(),output=stdout(),text=NULL,
         if(!is.list(hdl))
             stop("each handler must be a list")
         if(!all(c("regex", "handler") %in% names(hdl)))
-            stop("each handler must have named elements \'regex\' and \'handler\'")
+            stop("each handler must have elements \'regex\' and \'handler\'")
         if(!is.character(hdl$regex) || length(hdl$regex) != 1)
             stop("\'regex\' must be a character vector of length 1")
         if(!is.function(hdl$handler) || length(formals(hdl$handler)) < 2)
-            stop("\'handler\' must be a function accepting two or more arguments")
+            stop("\'handler\' must be a function of two or more arguments")
     }
 
+    # Make the handlers list available to code withing the yarr document
     assign(".handlers", handlers, envir)
 
+    # The 'status' variable indicates whether the parser is within a delimited
+    # code block (status == YCODE), or a text block (status == YTEXT).
     YCODE  <- 0   
     YTEXT  <- status <- 1
+    
+    # The 'code' variable accumulates delimited code strings. The
+    # value of 'code' is passed to the 'dispatch' function when the entire
+    # delimited code block is parsed. The 'line' serves as a text buffer.
     code   <- line  <- '' 
+
+    # The 'input' variable is a list of all text and code blocks within the 
+    # yarr file. This variable is returned by the 'yarr' function invisibly.
     input  <- list()
+
+    # Convenience function
     mlen   <- function(regex) attr(regex, "match.length")
 
     while(TRUE) {
 
         # Read line, add back '\n', break on EOF
+        # FIXME: should we add back the linebreak from options()?
         if(line == '') {
             line <- readLines(icon, 1)
             if(length(line) < 1) break
