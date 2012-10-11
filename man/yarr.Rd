@@ -34,8 +34,8 @@ yarr(file=stdin(), envir=parent.frame(), output=stdout(), text=NULL,
     consisting of the named elements \samp{regex} and \samp{handler}. The
     former should be a character string containing a regular expression to
     be matched against text delimited by \samp{delim}, but not including the
-    delimiters, which are stripped before matching. If matching, the 
-    delimited text is passed to the corresponding \samp{handler}, which should
+    delimiters, which are stripped beforhand. If matching, the delimited
+    text is passed to the corresponding \samp{handler}, which should
     be a function with the prototype \samp{function(code, envir)}, where 
     \samp{code} is the delimited text and \samp{envir} is an environment where
     \R code evaluation should occur. Each \samp{handler} should return a character
@@ -74,11 +74,11 @@ yarr(file=stdin(), envir=parent.frame(), output=stdout(), text=NULL,
     and functions declared by earlier expressions are available to subsequent
     code. 
 
-    The \samp{handler} variables are stored in the \samp{envir} environment
-    under the name \samp{.handler}. Modifications to this variable affects
-    subsequent handler dispatch. Hence, the \code{yarr} syntax may be modified on
-    the fly. The \samp{citation.yarr} file included with this package illustrates
-    some advanced usage of this variable.
+    The \samp{handler} variable is stored in the \samp{envir} environment
+    under the name \samp{.handler}. Modifications to this variable affect
+    subsequent handler dispatch. Hence, the \code{yarr} handler syntax may be
+    modified on the fly. The \samp{citation.yarr} file included with this
+    package illustrates some advanced usage of this variable.
 
     If the \code{evaluate} package is installed and delimited code generates 
     graphical output, the last graphics state is stored in \samp{envir} with the

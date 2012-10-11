@@ -1,6 +1,6 @@
 #  yarr - Mixing R Output with Text
 #
-#  Copyright (C) 2011 Matthew S. Shotwell
+#  Copyright (C) 2012 Matthew S. Shotwell
 #
 #  yarr is free software; licensed under the terms of the GNU General Public
 #  License; either version 2 of the License, or any later version.
@@ -166,7 +166,7 @@ default_handlers <- function() {
 # newlines in the style of the brew package.
 default_delim <- function() c('<<', '>>|->>|->>\n')
 
-# The dispatch function matches delimited code, *including the delimiter*,
+# The dispatch function matches delimited code, *excluding the delimiter*,
 # against the collection of code handlers.
 dispatch <- function(code, envir) {
     handlers <- list()
