@@ -61,14 +61,13 @@ function(code, envir, output=TRUE, source=TRUE, prompt=TRUE) {
 capture_handler_classic <-
 function(code, envir, output=TRUE, source=TRUE, prompt=TRUE) {
     code <- sub('^@','',code)
-    exp <- try(parse(text=code),TRUE)
-    if(inherits(exp, 'try-error'))
-        return(exp) 
-    out <- ''
+    exp <- parse(text=code, keep.source=TRUE)
+    #use this to get source text: getSrcLines(attr(exp, 'srcfile'), a, b)
     if(length(exp) == 0) return(out)
+    out <- ''
     for(i in 1:length(exp)) {
         dep <- deparse(exp[[i]])
-        res <- try(capture.output(eval(exp[i],envir)),TRUE)
+        res <- capture.output(eval(exp[i],envir))
         if(output) {
             if(source)
                 out <- paste(out, line_fmt(dep, prompt), sep='')
@@ -173,13 +172,13 @@ dispatch <- function(code, envir) {
     if(exists(".handlers", envir))
         handlers <- get(".handlers", envir)
     hdl <- function(code, envir) 
-        return("Error: no handler found")
+        stop("no handler found")
     # Search for handler
     for(type in handlers) 
         if(grepl(type$regex, code))
             hdl <- type$handler
     # Call handler
-    try(as.character(hdl(code, envir)),TRUE)
+    try(as.character(hdl(code, envir)), silent=TRUE)
 }
 
 yarr <- function(file=stdin(),envir=parent.frame(),output=stdout(),
@@ -261,6 +260,9 @@ yarr <- function(file=stdin(),envir=parent.frame(),output=stdout(),
         indx <- length(input) + 1
 
         # Read line, add back '\n', break on EOF
+        # FIXME there is no easy way to read a single line without 
+        # removing the EOL character(s); one possibility is to read
+        # one character at a time with readChar()
         if(line == '') {
             line <- readLines(icon, 1)
             if(length(line) < 1) break
