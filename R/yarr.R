@@ -217,6 +217,7 @@ yarr <- function(file=stdin(),envir=parent.frame(),output=stdout(),text=NULL,
         stop("\'envir\' is not an environment")
 
     # Check delim
+    # FIXME need to check for identical opening and closing delimiters?
     if(!is.character(delim) || length(delim) != 2)
         stop("\'delim\' must be a character vector of length two")
     if(nchar(delim[1]) < 1 || nchar(delim[2]) < 1)
@@ -236,7 +237,7 @@ yarr <- function(file=stdin(),envir=parent.frame(),output=stdout(),text=NULL,
             stop("\'handler\' must be a function of two or more arguments")
     }
 
-    # Make the handlers list available to code withing the yarr document
+    # Make the handlers list available to code within the yarr document
     assign(".handlers", handlers, envir)
 
     # The 'status' variable indicates whether the parser is within a delimited
@@ -252,14 +253,19 @@ yarr <- function(file=stdin(),envir=parent.frame(),output=stdout(),text=NULL,
     # The 'input' variable is a list of all text and code blocks within the 
     # yarr file. This variable is returned by the 'yarr' function invisibly.
     input  <- list()
-
-    # Convenience function
+ 
+    # Convenience function to extract "match.length"
     mlen   <- function(regex) attr(regex, "match.length")
 
     while(TRUE) {
 
+        # Each iteration corresponds to a single item of either text
+        # or code. Text items may be no longer than one line (i.e. up
+        # to and including '\n'). However, code items may span multiple
+        # lines. The 'indx' variable identifies the current 'input' index.
+        indx <- length(input) + 1
+
         # Read line, add back '\n', break on EOF
-        # FIXME: should we add back the linebreak from options()?
         if(line == '') {
             line <- readLines(icon, 1)
             if(length(line) < 1) break
@@ -269,15 +275,16 @@ yarr <- function(file=stdin(),envir=parent.frame(),output=stdout(),text=NULL,
         if(status == YTEXT) {
             # Look for opening delimiter
             odel <- regexpr(delim[1], line)
+            input[[indx]] <- list(type='text')
             if(odel < 0) {
-                writeLines(line, ocon, sep='')
-                input[[length(input) + 1]] <- list(type='text',data=line)
+                input[[indx]]$data <- line
                 line <- ''
             } else {
-                writeLines(substr(line, 1, odel-1), ocon, sep='')
+                input[[indx]]$data = substr(line, 1, odel-1)
                 line <- substr(line, odel + mlen(odel), nchar(line))
                 status <- YCODE
             } 
+            writeLines(input[[indx]]$data, ocon, sep='')
             next
         }
         
@@ -289,8 +296,8 @@ yarr <- function(file=stdin(),envir=parent.frame(),output=stdout(),text=NULL,
                 line <- ''
             } else {
                 code <- paste(code, substr(line, 1, cdel-1), sep='')
+                input[[indx]] <- list(type='code',data=code)
                 writeLines(dispatch(code, envir), ocon, sep='')
-                input[[length(input) + 1]] <- list(type='code',data=code)
                 code <- ''
                 line <- substr(line, cdel + mlen(cdel), nchar(line))
                 status <- YTEXT
@@ -301,7 +308,8 @@ yarr <- function(file=stdin(),envir=parent.frame(),output=stdout(),text=NULL,
     if(closeIcon) close(icon)
     if(closeOcon) close(ocon)
     if(status == YCODE)
-        warning("file ended unexpectedly")
+        warning(paste("file ended while scanning for closing delimiter '",
+             delim[2], "'", sep=""))
     
     invisible(input)
 }
