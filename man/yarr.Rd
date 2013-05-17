@@ -15,7 +15,7 @@
     (e.g. LaTeX, HTML). 
 }
 \usage{
-yarr(file=stdin(), envir=parent.frame(), output=stdout(), text=NULL,
+yarr(file=stdin(), envir=parent.frame(), output=stdout(),
      delim=default_delim(), handlers=default_handlers())
 }
 \arguments{
@@ -25,9 +25,6 @@ yarr(file=stdin(), envir=parent.frame(), output=stdout(), text=NULL,
     be evaluated. Default is the caller's environment}
   \item{output}{A connection, or a character string naming the file
     to write. stdout() is the default.}
-  \item{text}{A character string treated as if it contained lines of a file
-    to read. Only one of \code{file} or \code{text} is used as input. 
-    Default is \code{NULL}.}
   \item{delim}{A character vector with two elements, indcating the opening
     and closing delimiters (regular expressions) for code}
   \item{handlers}{A list of code handlers. Each elements is itself a list,

@@ -182,23 +182,18 @@ dispatch <- function(code, envir) {
     try(as.character(hdl(code, envir)),TRUE)
 }
 
-yarr <- function(file=stdin(),envir=parent.frame(),output=stdout(),text=NULL,
+yarr <- function(file=stdin(),envir=parent.frame(),output=stdout(),
          delim=default_delim(),handlers=default_handlers()) {
 
     closeIcon <- closeOcon <- FALSE
 
-    # Check file, text
-    if (is.character(text) && length(text) > 0) {
-        closeIcon <- TRUE
-        icon <- textConnection(text)
-    } else if (inherits(file,'connection') && isOpen(file,"read")) {
+    # Check file
+    if (inherits(file,'connection') && isOpen(file,"read")) {
         icon <- file
     } else if (is.character(file)) {
         closeIcon <- TRUE
         icon <- file(file,open="rt")
     } else {
-        if(!is.null(text))
-            stop("\'text\' must be NULL or non-empty character vector")
         stop("\'file\' is not valid")
     }
 
