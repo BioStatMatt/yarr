@@ -1,6 +1,6 @@
 #  yarr - Mixing R Output with Text
 #
-#  Copyright (C) 2012 Matthew S. Shotwell
+#  Copyright (C) 2013 Matthew S. Shotwell
 #
 #  yarr is free software; licensed under the terms of the GNU General Public
 #  License; either version 2 of the License, or any later version.
