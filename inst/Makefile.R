@@ -1,4 +1,4 @@
-PROJECT=<<=project>>
+PROJECT=<<=cat(project)>>
 YARRDIR=yarr
 HTMLDIR=html
 RSRCDIR=R
@@ -8,13 +8,13 @@ HTML=$(addprefix $(HTMLDIR)/,index.html)
 RSRC=$(addprefix $(RSRCDIR)/,common.R)
 
 # PRODHOST - web host address
-PRODHOST=<<=remote_host>>
+PRODHOST=<<=cat(remote_host)>>
 # PRODUSER - web host username 
-PRODUSER=<<=remote_user>>
+PRODUSER=<<=cat(remote_user)>>
 # PRODDIR - web host directory 
-PRODDIR=<<=remote_path>>
+PRODDIR=<<=cat(remote_path)>>
 # PRODURL - the complete url 
-PRODURL=<<=remote_url>>
+PRODURL=<<=cat(remote_url)>>
 # RSYNC - rsync command
 RSYNC=/usr/bin/rsync -r -v
 # BROWSER - web browser

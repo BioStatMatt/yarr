@@ -10,9 +10,10 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 
 mkyarr <- function(project,
+                   remote_user="",
                    remote_host="",
                    remote_path="",
-                   remote_user="",
+                   remote_url ="",
                    verbose=FALSE) {
 
     # store old warn
@@ -52,7 +53,7 @@ mkyarr <- function(project,
         )
 
     for(cf in copyfiles) {
-        file.copy(cf$from, cf$to)
+        file.copy(system.file(cf$from, package="yarr"), cf$to)
         if(verbose)
             cat(paste(cf$to, "created\n"))
     }

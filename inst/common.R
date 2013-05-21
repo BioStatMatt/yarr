@@ -1,16 +1,3 @@
-# Resample. If iid==TRUE, resample rows independently, if iid is the name of a
-# column, resample according to the unique values of iid (i.e. a 'cluster'
-# bootstrap)
-resample <- function(dat, iid=TRUE) {
-    if(iid==TRUE) {
-        ind <- sample(1:nrow(dat), replace=TRUE)
-    } else {
-        ids <- sample(unique(dat[[iid]]), replace=TRUE)
-        ind <- unlist(sapply(ids, function(id) which(dat[[iid]] == id)))
-    }
-    dat[ind,]
-}
-
 html.data.frame <- function(object, header='', footer='',
     rownames=TRUE, fontsize=10, ...) {
     esc <- function (text) {
