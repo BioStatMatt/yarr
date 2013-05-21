@@ -9,12 +9,8 @@
 #  This program is distributed WITHOUT ANY WARRANTY nor the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 
-mkyarr <- function(project,
-                   remote_user="",
-                   remote_host="",
-                   remote_path="",
-                   remote_url ="",
-                   verbose=FALSE) {
+mkyarr <- function(project, remote_host="", remote_user="",
+                   remote_path="", remote_url ="", verbose=FALSE) {
 
     # store old warn
     warn <- options("warn")
@@ -61,5 +57,6 @@ mkyarr <- function(project,
     # create Makefile
     yarr::yarr(system.file("Makefile.R", package="yarr"),
                output=file.path(project, "Makefile"))
-    cat(paste(file.path(project, "Makefile"), "created\n"))
+    if(verbose)
+        cat(paste(file.path(project, "Makefile"), "created\n"))
 }
