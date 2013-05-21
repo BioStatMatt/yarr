@@ -4,6 +4,6 @@ Title: Extensible Framework for R Reporting
 Version: 0.0
 Author: Matt Shotwell <Matt.Shotwell@Vanderbilt.edu>
 Maintainer: Matt Shotwell <Matt.Shotwell@Vanderbilt.edu>
-Suggests: evaluate (>= 0.3)
+Depends: R (>= 3.0.0)
 Description: The yarr package is an extensible reporting framework for mixing R code with text, including text containing other markup (e.g. LaTeX, HTML).
 License: GPL-2

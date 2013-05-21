@@ -3,7 +3,7 @@
     .handlers[[length(.handlers) + 1]] <- list(
         regex = '^citation$',
         handler = function(code, envir) {
-            cit <- attr(citation()[[1]], 'textVersion')
+            cit <- citation()$textVersion
             paste(strwrap(cit, width=70), sep='', collapse='\n')
         })
 ->>

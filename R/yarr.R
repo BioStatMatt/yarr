@@ -22,50 +22,28 @@ escape_HTML <- function(text) {
 # character vector of length one, and envir is the environment where evaluation
 # should occur. By convention, handlers strip trailing newlines.
 
-# The capture_handler_evaluate and capture_handler_classic functions
-# are Sweave-like functions that return a string that appears as if the code
-# were evaluated at the R prompt. The _evaluate version uses the 'evaluate'
-# package, whereas the _classic version does not. These functions are 
-# configurable. The 'output' parameter indicates whether the returned string
-# should contain anything other than errors, warnings, or messages. The
-# 'source' parameter indicates whether the returned string should contain the
-# code that generated output. The 'prompt' argument indicates whether the R
-# prompt should be printed (i.e., '>') before code. Clearly, 'prompt' has no
-# effect when 'source' is FALSE, and neither 'source' nor 'prompt' have an
-# effect when 'output' is FALSE.
-capture_handler_evaluate <-
-function(code, envir, output=TRUE, source=TRUE, prompt=TRUE) {
-    require("evaluate", quietly=TRUE)
-    code <- sub('^@','',code)
-    code <- sub('^\\n','',code)
-    res <- evaluate(code, envir)
-    out <- ''
-    for(val in res) {
-        if(is.character(val) && output)
-            out <- paste(out,val,sep='',collapse='')
-        if(is.source(val) && output && source)
-            out <- paste(out,line_fmt(val$src, prompt),sep='',collapse='')
-        if(is.warning(val))
-            out <- paste(out,'Warning: ',val$message,sep='')
-        if(is.message(val))
-            out <- paste(out,'Message: ',val$message,sep='')
-        if(is.error(val))
-            out <- paste(out,'Error: ',val$message,sep='')
-        if(is.recordedplot(val))
-            assign('.recordedplot',val,envir=envir)
-    }
-    out <- sub('\\n$','',out)
-    return(out)
-}
+# The and capture_handler_classic function is an Sweave-like function that
+# returns a string that appears as if the code were evaluated at the R prompt.
+# These function is configurable. The 'output' parameter indicates whether the
+# returned string should contain anything other than errors, warnings, or
+# messages. The 'source' parameter indicates whether the returned string should
+# contain the code that generated output. The 'prompt' argument indicates
+# whether the R prompt should be printed (i.e., '>') before code. Clearly,
+# 'prompt' has no effect when 'source' is FALSE, and neither 'source' nor
+# 'prompt' have an effect when 'output' is FALSE.
 
-capture_handler_classic <-
+capture_handler <-
 function(code, envir, output=TRUE, source=TRUE, prompt=TRUE) {
     code <- sub('^@','',code)
     exp <- parse(text=code, keep.source=TRUE)
     #use this to get source text: getSrcLines(attr(exp, 'srcfile'), a, b)
     if(length(exp) == 0) return(out)
     out <- ''
+    #scl <- 1 # current source line
     for(i in 1:length(exp)) {
+        #stl <- attr(exp[i], 'srcref')[[1]][3]
+        #dep <- getSrcLines(attr(exp, 'srcfile'), scl, stl)
+        #scl <- stl + 1
         dep <- deparse(exp[[i]])
         res <- capture.output(eval(exp[i],envir))
         if(output) {
@@ -81,17 +59,6 @@ function(code, envir, output=TRUE, source=TRUE, prompt=TRUE) {
     }
     out <- sub('\\n$', '', out)
     return(out)
-}
-
-# The capture_handler_evaluate function is used when the 'evaluate' package is
-# installed
-capture_handler <-
-function(code, envir, output=TRUE, source=TRUE, prompt=TRUE) {
-    if(suppressWarnings(require("evaluate", quietly=TRUE))) {
-        capture_handler_evaluate(code, envir, output, source, prompt)
-    } else {
-        capture_handler_classic(code, envir, output, source, prompt)
-    }
 }
 
 # Return errors, warnings, and messages

@@ -46,7 +46,8 @@ yarr(file=stdin(), envir=parent.frame(), output=stdout(),
     The \code{yarr} function provides a mechanism to parse, evaluate, and
     substitute delimited code in plain text or documents with markup. The 
     delimited code is usually a complete \R expression, and the code handler
-    typically outputs text generated in the process of evaluating the \R expression.
+    typically outputs text generated in the process of evaluating the \R
+    expression.
 
     The \code{yarr} package utilizes a default pair of delimiters and code
     handlers, inspired by the syntax used by \code{\link{Sweave}} and the 
@@ -76,13 +77,6 @@ yarr(file=stdin(), envir=parent.frame(), output=stdout(),
     subsequent handler dispatch. Hence, the \code{yarr} handler syntax may be
     modified on the fly. The \samp{citation.yarr} file included with this
     package illustrates some advanced usage of this variable.
-
-    If the \code{evaluate} package is installed and delimited code generates 
-    graphical output, the last graphics state is stored in \samp{envir} with the
-    symbol \samp{.recordedplot}. This object may also be accessed by subsequent code.
-    The \samp{.recordedplot} variable is overwritten if subsequent code generates
-    graphical output. If \code{evaluate} is not installed, graphics devices must
-    be managed manually.
 
     The following document illustrates the default yarr syntax.
 
@@ -176,8 +170,8 @@ loaded via a namespace (and not attached):
 }
 \author{ Matt Shotwell <Matt.Shotwell@Vanderbilt.edu> }
 \examples{
-    yarr(system.file('email.yarr', package='yarr'))
-    yarr(system.file('blog.yarr', package='yarr'))
-    yarr(system.file('citation.yarr', package='yarr'))
+    yarr(system.file('email.txt.R', package='yarr'))
+    yarr(system.file('blog.txt.R', package='yarr'))
+    yarr(system.file('citation.txt.R', package='yarr'))
 }
 \keyword{utilities}
