@@ -33,7 +33,7 @@ escape_HTML <- function(text) {
 # 'prompt' have an effect when 'output' is FALSE.
 
 capture_handler <-
-function(code, envir, output=TRUE, source=TRUE, prompt=TRUE) {
+function(code, envir, output=TRUE, source=TRUE, prompt=TRUE, indent='') {
     code <- sub('^@','',code)
     exp <- parse(text=code, keep.source=TRUE)
     #use this to get source text: getSrcLines(attr(exp, 'srcfile'), a, b)
@@ -48,11 +48,11 @@ function(code, envir, output=TRUE, source=TRUE, prompt=TRUE) {
         res <- capture.output(eval(exp[i],envir))
         if(output) {
             if(source)
-                out <- paste(out, line_fmt(dep, prompt), sep='')
+                out <- paste0(out, line_fmt(dep, prompt, indent))
             if(length(res)>0) {
-                res <- paste(res, collapse='\n', sep='')
+                res <- paste0(indent, res, collapse=paste0('\n', indent))
                 #if(!grepl('\\n$', res))
-                    res <- paste(res, '\n', sep='')
+                    res <- paste0(res, '\n')
                 out <- paste(out, res, sep='')
             }
         }
@@ -67,28 +67,28 @@ silent_handler <- function(code, envir) {
 }
 
 # Return R output, including errors, warnings, and messages, but not code
-result_handler <- function(code, envir) {
+result_handler <- function(code, envir, indent='') {
     code <- sub('^=','',code)
-    capture_handler(code, envir, source=FALSE)
+    capture_handler(code, envir, source=FALSE, indent=indent)
 }
 
 # Return R output, including errors, warnings, messages, and code, but don't
 # print the R prompt. This is useful, for example, when the code will be copied
 # and pasted from an email or webpage into the R interpreter.
-source_handler <- function(code, envir) {
+source_handler <- function(code, envir, indent='') {
     code <- sub('^&','',code)
-    capture_handler(code, envir, prompt=FALSE)
+    capture_handler(code, envir, prompt=FALSE, indent=indent)
 }
 
 # Collapse lines into a single string, inserting linebreaks and, if 'prompt' is
 # TRUE, the R prompt. FIXME: should the linebreak characters be extracted from
 # options()?
-line_fmt <- function(x, prompt=TRUE) {
+line_fmt <- function(x, prompt=TRUE, indent='') {
     lines <- unlist(strsplit(x, '\n'))
     if(prompt) {
-        lines[1] <- paste(options('prompt'), lines[1], sep='')
+        lines[1] <- paste(indent, options('prompt'), lines[1], sep='')
         if(length(lines) > 1)
-            lines[-1] <- paste(options('continue'), lines[-1], sep='')
+            lines[-1] <- paste(indent, options('continue'), lines[-1], sep='')
     }
     paste(lines, '\n', collapse='', sep='')
 }
@@ -111,6 +111,24 @@ html_capture_handler <- function(code, envir) {
     escape_HTML(capture_handler(code,envir))
 }
 
+# Same as result_handler, but indent by two spaces
+idnt_result_handler <- function(code, envir) {
+  code <- sub('^>','',code)
+  result_handler(code,envir,indent='  ')
+}
+
+# Same as source_handler, but indent by two spaces
+idnt_source_handler <- function(code, envir) {
+  code <- sub('^>','',code)
+  source_handler(code,envir,indent='  ')
+}
+
+# Same as capture_handler, but indent by two spaces
+idnt_capture_handler <- function(code, envir) {
+  code <- sub('^>','',code)
+  capture_handler(code,envir,indent='  ')
+}
+
 # This structure is an example of how the 'handlers' argument to yarr should
 # be constructed. This is the default collection of code handlers.
 default_handlers <- function() {
@@ -122,6 +140,9 @@ default_handlers <- function() {
     handlers[[5]] <- list(regex='^/=',handler=html_result_handler)
     handlers[[6]] <- list(regex='^/&',handler=html_source_handler)
     handlers[[7]] <- list(regex='^/@',handler=html_capture_handler)
+    handlers[[8]] <- list(regex='^>=',handler=idnt_result_handler)
+    handlers[[9]] <- list(regex='^>&',handler=idnt_source_handler)
+    handlers[[10]] <- list(regex='^>@',handler=idnt_capture_handler)
     return(handlers)
 }
 
