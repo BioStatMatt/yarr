@@ -1,10 +1,12 @@
 PROJECT=<<=cat(project)>>
 YARRDIR=yarr
+RSTDDIR=rst
 HTMLDIR=html
 RSRCDIR=R
 DATADIR=data
 
 HTML=$(addprefix $(HTMLDIR)/,index.html)
+RSTD=$(addprefix $(RSTDDIR)/,index.rst)
 RSRC=$(addprefix $(RSRCDIR)/,common.R)
 
 # PRODHOST - web host address
@@ -19,9 +21,16 @@ PRODURL=<<=cat(remote_url)>>
 RSYNC=/usr/bin/rsync -r -v
 # BROWSER - web browser
 BROWSER=/usr/bin/firefox
+# RSTARGS - rst2html arguments
+RSTSTYL=--stylesheet-path='html/style.css'
+# RSTSTYL - rst2html stylesheet
+RSTARGS=--no-toc-backlinks --initial-header-level=2
 
-$(HTMLDIR)/%.html:	$(YARRDIR)/%.html.R $(RSRC) $(HTMLDIR)/style.css
-			R --vanilla -e 'yarr::yarr("$<",output="$@")'
+$(RSTDDIR)/%.rst:	$(YARRDIR)/%.rst.R $(RSRC)
+			R --vanilla -e 'library("yarr"); yarr("$<",output="$@")'
+
+$(HTMLDIR)/%.html:	$(RSTDDIR)/%.rst $(HTMLDIR)/style.css
+			rst2html $(RSTSTYL) $(RSTARGS) $< > $@ 
 
 build:			$(HTML)
 
@@ -42,3 +51,4 @@ view-local:		build
 			$(BROWSER) $(HTMLDIR)/index.html
 
 view:			view-local
+

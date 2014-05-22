@@ -1,6 +1,6 @@
 #  yarr - Mixing R Output with Text
 #
-#  Copyright (C) 2013 Matthew S. Shotwell
+#  Copyright (C) 2014 Matthew S. Shotwell
 #
 #  yarr is free software; licensed under the terms of the GNU General Public
 #  License; either version 2 of the License, or any later version.
@@ -9,8 +9,14 @@
 #  This program is distributed WITHOUT ANY WARRANTY nor the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 
-mkyarr <- function(project, remote_host="", remote_user="",
-                   remote_path="", remote_url ="", verbose=FALSE) {
+mkyarr <- function(project,
+                   remote_host="data.vanderbilt.edu",
+                   remote_user="shotwems",
+                   remote_path=paste0("/home/ssl/collab/shotwems/",
+                                      project, "/"),
+                   remote_url =paste0("https://", remote_host,
+                                      "/collab/shotwems/",
+                                      project, "/"), verbose=FALSE) {
 
     # store old warn
     warn <- options("warn")
@@ -24,7 +30,8 @@ mkyarr <- function(project, remote_host="", remote_user="",
         cat(paste(project, "created\n"))
 
     # create sub-directories
-    subdirs <- c("yarr", "data", "html", "R", "docs",
+    subdirs <- c("yarr", "data", "html",
+                 "R", "docs", "rst",
                  file.path("html", "cache"),
                  file.path("data", "cache")
                 )
@@ -38,8 +45,8 @@ mkyarr <- function(project, remote_host="", remote_user="",
 
     # copy templates and common files
     copyfiles <- list(
-        list(from="index.html.R",
-             to=file.path(project, "yarr", "index.html.R")),
+        list(from="index.rst.R",
+             to=file.path(project, "yarr", "index.rst.R")),
         list(from="common.R",
              to=file.path(project, "R", "common.R")),
         list(from="style.css",
